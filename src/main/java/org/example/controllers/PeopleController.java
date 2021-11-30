@@ -19,7 +19,7 @@ public class PeopleController {
     private DatabaseService personDAO;
 
     @Autowired
-    public PeopleController(@Qualifier("jdbcTemplateService")DatabaseService personDAO) {
+    public PeopleController(@Qualifier("pureJdbcService")DatabaseService personDAO) {
         this.personDAO = personDAO;
     }
 

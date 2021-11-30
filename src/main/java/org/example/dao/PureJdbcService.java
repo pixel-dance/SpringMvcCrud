@@ -1,9 +1,11 @@
 package org.example.dao;
 
 import org.example.models.Person;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,26 +14,27 @@ import java.util.List;
 public class PureJdbcService implements DatabaseService{
     private static int PEOPLE_COUNT;
 
-    @Value("${DataBase.URL}")
-    private static String URL;
-
-    @Value("${DataBase.USERNAME}")
-    private static String USERNAME;
-
-    @Value("${DataBase.PASSWORD}")
-    private static String PASSWORD;
-
     private static Connection connection;
 
-    static {
-        try{
-            Class.forName("org.postgresql.Driver");
+    @Autowired
+    private DataSource dataSource;
 
+    @PostConstruct
+    private void init(){
+        try {
+            Class.forName("org.postgresql.Driver");
+            connection = dataSource.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    @PreDestroy
+    private void destroy(){
         try {
-            connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -40,8 +43,6 @@ public class PureJdbcService implements DatabaseService{
     @Override
     public List<Person> index() {
         List<Person> people = new ArrayList<>();
-
-
         try (Statement statement = connection.createStatement()){
             String SQL = "SELECT * FROM Person";
             ResultSet resultSet = statement.executeQuery(SQL);
@@ -91,7 +92,7 @@ public class PureJdbcService implements DatabaseService{
     @Override
     public void save(Person person) {
 
-        try (PreparedStatement prepareStatement = connection.prepareStatement("INSERT INTO PERSON VALUES (1 ?,?,?)")){
+        try (PreparedStatement prepareStatement = connection.prepareStatement("INSERT INTO PERSON VALUES (1,?,?,?)")){
 
             prepareStatement.setString(1, person.getName());
             prepareStatement.setInt(2, person.getAge());
