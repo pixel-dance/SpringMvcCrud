@@ -14,6 +14,12 @@
 <br/>
 <hr/>
 
-<a href="/people/new">Create new person</a>
+<form th:action="@{/people/new}" method="get">
+    <input type="submit" value="Create new person"/>
+</form>
+
+<form th:action="@{/logout}" method="post">
+    <input type="submit" value="Sign Out"/>
+</form>
 </body>
 </html>
